@@ -17,11 +17,11 @@ class Highstock(Highchart):
                         **kwargs)
         self.parent = parent
 
-    def addSeries(self, data):
+    def setSeries(self, data):
 
         def ohlcDataMap(x):
             dateString = '{}'.format(x[0])
-            date = datetime.strptime(dateString, "%Y-%m-%d").timestamp() * 1000
+            date = datetime.strptime(dateString, "%Y-%m-%d %H:%M:%S").timestamp() * 1000
             open = x[1]
             high = x[2]
             low = x[3]
@@ -31,7 +31,7 @@ class Highstock(Highchart):
 
         def volumeDataMap(x):
             dateString = '{}'.format(x[0])
-            date = datetime.strptime(dateString, "%Y-%m-%d").timestamp() * 1000
+            date = datetime.strptime(dateString, "%Y-%m-%d %H:%M:%S").timestamp() * 1000
             volume = x[5]
             return [date, volume]
         volumeData = list(map(volumeDataMap, data))
@@ -79,5 +79,11 @@ class OWCandleStickChart(widget.OWWidget):
         highstock.chart()
 
     def set_data(self, data):
-        self.data = Timeseries.from_data_table(data)
-        self.chart.addSeries(data)
+        if not hasattr(data, 'time_variable') or not isinstance(data.time_variable, TimeVariable):
+            print("return no timevariable")
+            self.data = []
+            raise Exception('Missing time_variable attribute on input data. See TimeSeries.')
+
+        self.data = data
+
+        self.chart.setSeries(data)
